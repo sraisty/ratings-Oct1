@@ -37,9 +37,12 @@ def load_users():
     db.session.commit()
 
 def get_date(date_string):
-        day, month_str, year = date_string.split('-')
-        month = MONTHS.index(month_str) + 1
-        return date(int(year), month, int(day))
+        if date_string:
+            day, month_str, year = date_string.split('-')
+            month = MONTHS.index(month_str) + 1
+            return date(int(year), month, int(day))
+        else:
+            return None
 
 def load_movies():
     """Load movies from u.item into database."""
