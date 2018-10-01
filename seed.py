@@ -6,7 +6,11 @@ from model import User, Movie, Rating
 
 from model import connect_to_db, db
 from server import app
+from datetime import date
 
+
+MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+          'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
 def load_users():
     """Load users from u.user into database."""
@@ -32,6 +36,10 @@ def load_users():
     # Once we're done, we should commit our work
     db.session.commit()
 
+def get_date(date_string):
+        day, month_str, year = date_string.split('-')
+        month = MONTHS.index(month_str) + 1
+        return date(int(year), month, int(day))
 
 def load_movies():
     """Load movies from u.item into database."""
@@ -42,7 +50,13 @@ def load_movies():
     for line in open("seed_data/u.item"):
         line = line.rstrip()
         tokens = line.split('|')
-        movie_id, title, release_date, _, imdb_url = tokens[:5]
+        movie_id, title, release_date_str, _, imdb_url = tokens[:5]
+        
+        title = title[:-7]
+        release_date = get_date(release_date_str)
+
+        # LATER: try strptime() or strftime
+
         movie = Movie(movie_id = movie_id, 
                       title = title, 
                       released_at = release_date,
@@ -74,7 +88,8 @@ def set_val_user_id():
 
     # Get the Max user_id in the database
     result = db.session.query(func.max(User.user_id)).one()
-    max_id = int(result[0])
+    
+    max_id = result[0]
 
     # Set the value for the next user_id to be max_id + 1
     query = "SELECT setval('users_user_id_seq', :new_id)"
