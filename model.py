@@ -25,7 +25,7 @@ class User(db.Model):
     # rating = db.relationship("Rating") this was done with backref synthax
 
     def __repr__(self):
-        return f"<User user_id={self.user_id}, email={self.email}>"
+        return f"<User user_id={self.user_id}, email={self.email}. age={self.age}, zip={self.zipcode}>"
 
 
   
@@ -51,6 +51,7 @@ class Movie(db.Model):
 class Rating(db.Model):
     """Ratings database"""
 
+
     __tablename__ = "ratings"
 
     rating_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
@@ -64,8 +65,7 @@ class Rating(db.Model):
     movie = db.relationship("Movie", 
                         backref=db.backref("ratings", order_by=rating_id))
     def __repr__(self):
-        return f"<Ratings id={self.rating_id}, movie={self.movie_id},\
-                         user={self.user_id}, score={self.score}>"
+        return f"<Ratings id={self.rating_id}, movie={self.movie_id}, user={self.user_id}, score={self.score}>"
 
  
 ##############################################################################

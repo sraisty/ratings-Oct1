@@ -4,7 +4,7 @@ from sqlalchemy import func
 from model import User, Movie, Rating
 from model import connect_to_db, db
 from server import app
-from datetime import date
+from datetime import datetime
 
 
 
@@ -33,20 +33,20 @@ def load_users():
     db.session.commit()
 
 
-def get_date(date_string):
-    """ Converts a string like '05-Sept-2000' to a date obj """
-    if date_string:
-        day, month_str, year = date_string.split('-')
+# def get_date(date_string):
+#     """ Converts a string like '05-Sept-2000' to a date obj """
+#     if date_string:
+#         day, month_str, year = date_string.split('-')
     
-        MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
-             'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-        if month_str in MONTHS:
-            month = MONTHS.index(month_str) + 1
-            # if the string was an invalid date, should catch the
-            # ValueError exception taised by date and return None
-            return date(int(year), month, int(day))
+#         MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+#              'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+#         if month_str in MONTHS:
+#             month = MONTHS.index(month_str) + 1
+#             # if the string was an invalid date, should catch the
+#             # ValueError exception taised by date and return None
+#             return date(int(year), month, int(day))
 
-    return None
+#     return None
 
 
 def load_movies():
@@ -63,9 +63,14 @@ def load_movies():
         movie_id, title, rel_date_str, _, imdb_url = tokens[:5]
         
         title = title[:-7]
-        release_date = get_date(rel_date_str)
-
-        # LATER: try strptime() or strftime
+        # release_date = get_date(rel_date_str)
+    
+        # note: the release_date might not be present in the DB
+        if rel_date_str: 
+            release_date = datetime.strptime(rel_date_str, "%d-%b-%Y")
+        else:
+            release_date = None
+            
         movie = Movie(movie_id = movie_id, 
                       title = title, 
                       released_at = release_date,
