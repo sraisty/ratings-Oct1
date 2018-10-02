@@ -22,9 +22,13 @@ class User(db.Model):
     password = db.Column(db.String(64), nullable=True)
     age = db.Column(db.Integer, nullable=True)
     zipcode = db.Column(db.String(15), nullable=True)
+    # rating = db.relationship("Rating") this was done with backref synthax
 
     def __repr__(self):
         return f"<User user_id={self.user_id}, email={self.email}>"
+
+
+  
 
 
 # Put your Movie and Rating model classes here.
@@ -36,6 +40,12 @@ class Movie(db.Model):
     title = db.Column(db.String(150), nullable=True)
     released_at = db.Column(db.DateTime, nullable=True)
     imdb_url = db.Column(db.String(200), nullable=True)
+    # rating = db.relationship("Rating") this was done with backref synthax
+
+    
+    def __repr__(self):
+        return f"<Movie id={self.movie_id}, title={self.title}, release={self.released_at}>"
+
 
 
 class Rating(db.Model):
@@ -44,10 +54,18 @@ class Rating(db.Model):
     __tablename__ = "ratings"
 
     rating_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    movie_id = db.Column(db.Integer, nullable=False)
-    user_id = db.Column(db.Integer, nullable=False)
+    movie_id = db.Column(db.Integer, db.ForeignKey('movies.movie_id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
     score = db.Column(db.Integer, nullable=True)
 
+    user = db.relationship("User", 
+                        backref=db.backref("ratings", order_by=rating_id))
+
+    movie = db.relationship("Movie", 
+                        backref=db.backref("ratings", order_by=rating_id))
+    def __repr__(self):
+        return f"<Ratings id={self.rating_id}, movie={self.movie_id},\
+                         user={self.user_id}, score={self.score}>"
 
  
 ##############################################################################

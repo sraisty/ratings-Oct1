@@ -2,20 +2,16 @@
 
 from sqlalchemy import func
 from model import User, Movie, Rating
-
-
 from model import connect_to_db, db
 from server import app
 from datetime import date
 
 
-MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
-          'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
 def load_users():
     """Load users from u.user into database."""
 
-    print("Users")
+    print("Loading users")
 
     # Delete all rows in table, so if we need to run this a second time,
     # we won't be trying to add duplicate users
@@ -36,30 +32,40 @@ def load_users():
     # Once we're done, we should commit our work
     db.session.commit()
 
+
 def get_date(date_string):
-        if date_string:
-            day, month_str, year = date_string.split('-')
+    """ Converts a string like '05-Sept-2000' to a date obj """
+    if date_string:
+        day, month_str, year = date_string.split('-')
+    
+        MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+             'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        if month_str in MONTHS:
             month = MONTHS.index(month_str) + 1
+            # if the string was an invalid date, should catch the
+            # ValueError exception taised by date and return None
             return date(int(year), month, int(day))
-        else:
-            return None
+
+    return None
+
 
 def load_movies():
     """Load movies from u.item into database."""
+
     print ("Loading Movies")
 
+    # Delete all rows in table, so if we need to run this a second time,
+    # we won't be trying to add duplicate movies
     Movie.query.delete()
 
     for line in open("seed_data/u.item"):
-        line = line.rstrip()
-        tokens = line.split('|')
-        movie_id, title, release_date_str, _, imdb_url = tokens[:5]
+        tokens = line.rstrip().split('|')
+        movie_id, title, rel_date_str, _, imdb_url = tokens[:5]
         
         title = title[:-7]
-        release_date = get_date(release_date_str)
+        release_date = get_date(rel_date_str)
 
         # LATER: try strptime() or strftime
-
         movie = Movie(movie_id = movie_id, 
                       title = title, 
                       released_at = release_date,
@@ -71,7 +77,11 @@ def load_movies():
 
 def load_ratings():
     """Load ratings from u.data into database."""
+
     print("Loading ratings")
+
+    # Delete all rows in table, so if we need to run this a second time,
+    # we won't be trying to add duplicate ratings.
     Rating.query.delete()
 
     for line in open("seed_data/u.data"):
