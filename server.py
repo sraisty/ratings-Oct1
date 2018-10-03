@@ -42,7 +42,7 @@ def get_user_info(myuser_id):
     all the movie titles and scores that this user rated
     """
     user = User.query.get(myuser_id)
-    rating_a = db.session.query(Movie.title, Rating.score)
+    rating_a = db.session.query(Movie.title, Rating.score, Rating.movie_id)
     rating_b = rating_a.filter(Rating.user_id == user.user_id)
     ratings = rating_b.join(Rating).all()
 
@@ -50,14 +50,57 @@ def get_user_info(myuser_id):
     
     return render_template("user_detail.html", user=user, ratings=ratings)
 
-# @app.route('/movies')
-# def movie_list():
-#     movies = Movies.query.all()
-#     return render_template("movie_list.html", movies=movies)
+@app.route('/movies')
+def movie_list():
+    movies = Movie.query.order_by(Movie.title).all()
 
-# @app.route('/movies/<int:movie_id>')
-# def movie_info(movie_id):
 
+    return render_template("movie_list.html", movies=movies)
+
+@app.route('/submit_rating', methods=["POST"])
+def submit_rating():
+    # get our userid off the session
+    user_id = session.get('user_id', None)
+    if user_id is None:
+        flash('You must be logged in to rate a movie')
+        return redirect ('/')
+
+    score = request.form.get("score")
+    movie_id = request.form.get("movie_id")
+
+    movie_title = Movie.query.filter(Movie.movie_id == movie_id).first().title
+
+    movie_query = Rating.query.filter(Rating.movie_id == movie_id)  
+    r = movie_query.filter(Rating.user_id == user_id).first()
+
+    if r is None:
+        # add a new rating
+        rating = Rating(user_id=user_id, movie_id=movie_id, score=score)
+        db.session.add(rating)
+        db.session.commit()
+
+        # flash a success message
+
+        flash (f'Thanks for rating {movie_title}!')
+        return redirect('/')
+
+
+    # check to see if this user already submitted a rating
+    r.score = score
+    db.session.commit()   
+    flash (f'We updated your rating for {movie_title}!')
+    return redirect('/')
+
+    
+
+@app.route('/movies/<int:movie_id>')
+def movie_info(movie_id):
+    # fake data to erase in a bit
+    movie = Movie.query.get(movie_id)
+    # ratings is a list of rating objects
+    ratings = Rating.query.filter(Rating.movie_id == movie.movie_id).all()
+    
+    return render_template("movie_detail.html", movie=movie, ratings=ratings)
 
 @app.route('/register', methods=["GET"])
 def display_register_form():
