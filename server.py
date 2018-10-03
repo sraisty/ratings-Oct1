@@ -41,12 +41,23 @@ def get_user_info(myuser_id):
     """ Display the user info (age, zip) and the list of 
     all the movie titles and scores that this user rated
     """
-    user = User.query.filter(User.user_id == myuser_id).first()
+    user = User.query.get(myuser_id)
     rating_a = db.session.query(Movie.title, Rating.score)
-    rating_b = rating_a.filter(Rating.user_id == myuser_id)
+    rating_b = rating_a.filter(Rating.user_id == user.user_id)
     ratings = rating_b.join(Rating).all()
+
+    #also use joinload
     
     return render_template("user_detail.html", user=user, ratings=ratings)
+
+# @app.route('/movies')
+# def movie_list():
+#     movies = Movies.query.all()
+#     return render_template("movie_list.html", movies=movies)
+
+# @app.route('/movies/<int:movie_id>')
+# def movie_info(movie_id):
+
 
 @app.route('/register', methods=["GET"])
 def display_register_form():
