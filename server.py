@@ -22,7 +22,12 @@ app.jinja_env.undefined = StrictUndefined
 @app.route('/')
 def index():
     """Homepage."""
-    return render_template("homepage.html")
+    if session.get('user_id'):
+        # user is logged in already, so show the homepage 
+        return render_template("homepage.html")
+
+    # user needs to log  in first before seeing the homepage
+    return redirect('/login')
 
 @app.route('/users')
 def user_list():
@@ -30,6 +35,18 @@ def user_list():
 
     users = User.query.all()
     return render_template("user_list.html", users=users)
+
+@app.route('/users/<int:myuser_id>')
+def get_user_info(myuser_id):
+    """ Display the user info (age, zip) and the list of 
+    all the movie titles and scores that this user rated
+    """
+    user = User.query.filter(User.user_id == myuser_id).first()
+    rating_a = db.session.query(Movie.title, Rating.score)
+    rating_b = rating_a.filter(Rating.user_id == myuser_id)
+    ratings = rating_b.join(Rating).all()
+    
+    return render_template("user_detail.html", user=user, ratings=ratings)
 
 @app.route('/register', methods=["GET"])
 def display_register_form():
