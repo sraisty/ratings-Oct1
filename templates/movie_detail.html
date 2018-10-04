@@ -12,10 +12,10 @@
     <form action="/submit_rating" method="POST">
         Your Rating: 
         {% for i in range(1,6) %}
-            {% if score == i %}
-                <input type="radio" name="score" value="{{i}}" checked>{{i}}           
+            {% if i == score %}
+                <input type="radio" name="score" value="{{ i }}" checked>{{i}}           
             {% else %}
-                <input type="radio" name="score" value="{{i}}">{{i}}
+                <input type="radio" name="score" value="{{ i }}">{{ i }}
             {% endif %}
         {% endfor %}
         <input type="hidden" name="movie_id" value="{{ movie.movie_id }}">

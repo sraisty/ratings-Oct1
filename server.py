@@ -68,12 +68,10 @@ def movie_info(movie_id):
 
     prior_rating = Rating.query.filter(
         (Rating.movie_id == movie_id) & (Rating.user_id == user_id)).first()
-
-    # COME BACK LATER AND MAKE A TRY/EXCEPT
     if prior_rating:
         score = prior_rating.score
     else:
-        score = 0
+        score = None
 
     return render_template("movie_detail.html", 
                             movie=movie, 
