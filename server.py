@@ -56,6 +56,30 @@ def movie_list():
 
     return render_template("movie_list.html", movies=movies)
 
+@app.route('/movies/<int:movie_id>')
+def movie_info(movie_id):
+    """ Displays detail about the movie, including ratings on that movie """
+    user_id = session.get('user_id', None)
+    if user_id is None:
+        flash('You must be logged in to view movie details')
+        return redirect ('/')
+
+    movie = Movie.query.get(movie_id)
+
+    prior_rating = Rating.query.filter(
+        (Rating.movie_id == movie_id) & (Rating.user_id == user_id)).first()
+
+    # COME BACK LATER AND MAKE A TRY/EXCEPT
+    if prior_rating:
+        score = prior_rating.score
+    else:
+        score = 0
+
+    return render_template("movie_detail.html", 
+                            movie=movie, 
+                            score=score)
+
+
 @app.route('/submit_rating', methods=["POST"])
 def submit_rating():
     # get our userid off the session
@@ -80,23 +104,15 @@ def submit_rating():
         db.session.add(rating)
         db.session.commit()
         # flash a success message
-        flash (f'Thanks for rating {rating.movie.title}!')
-        return redirect(f'/movies/{rating.movie.movie_id}')
+        flash ("Thanks for rating {}!".format(rating.movie.title))
+        return redirect(f"/movies/{rating.movie.movie_id}")
 
 
     # check to see if this user already submitted a rating
     prior_rating.score = score
     db.session.commit()   
-    flash (f'We updated your rating for {prior_rating.movie.title}!')
-    return redirect(f'/movies/{prior_rating.movie.movie_id}')
-
-    
-
-@app.route('/movies/<int:movie_id>')
-def movie_info(movie_id):
-    """ Displays detail about the movie, including ratings on that movie """
-    movie = Movie.query.get(movie_id)
-    return render_template("movie_detail.html", movie=movie)
+    flash("We updated your rating for {}!".format(prior_rating.movie.title))
+    return redirect(f"/movies/{prior_rating.movie.movie_id}")
 
 
 @app.route('/register', methods=["GET"])
@@ -150,6 +166,7 @@ def login_user():
     # login didn't succeed because of either bad email or bad password
     flash("Bad password. Please try again.")
     return redirect('/login')
+
 
 @app.route("/logout")
 def logout_user():

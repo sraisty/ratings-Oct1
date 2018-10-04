@@ -11,14 +11,18 @@
     <h3>Add your Rating!</h3>
     <form action="/submit_rating" method="POST">
         Your Rating: 
-        <input type="radio" name="score" value="1">1 
-        <input type="radio" name="score" value="2">2
-        <input type="radio" name="score" value="3">3
-        <input type="radio" name="score" value="4">4
-        <input type="radio" name="score" value="5">5
+        {% for i in range(1,6) %}
+            {% if score == i %}
+                <input type="radio" name="score" value="{{i}}" checked>{{i}}           
+            {% else %}
+                <input type="radio" name="score" value="{{i}}">{{i}}
+            {% endif %}
+        {% endfor %}
         <input type="hidden" name="movie_id" value="{{ movie.movie_id }}">
         <br>
         <input type="submit">
+      
+        
     </form>
 
     <h3>Previous Ratings</h3>
