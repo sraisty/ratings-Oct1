@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+
+
+{% block content %}
+    <h2>{{ movie.title }}</h2>
+    <ul>
+        <li>Release Date: {{ movie.released_at }}</li>
+        <li><a href="{{ movie.imdb_url }}">Check out on IMDB (not really the links don't work!)</a></li>
+    </ul>
+    <h3>Add your Rating!</h3>
+    <form action="/submit_rating" method="POST">
+        Your Rating: 
+        <input type="radio" name="score" value="1">1 
+        <input type="radio" name="score" value="2">2
+        <input type="radio" name="score" value="3">3
+        <input type="radio" name="score" value="4">4
+        <input type="radio" name="score" value="5">5
+        <input type="hidden" name="movie_id" value="{{ movie.movie_id }}">
+        <br>
+        <input type="submit">
+    </form>
+
+    <h3>Previous Ratings</h3>
+    <ul>
+        <!-- Note that ratings is a list of Rating instances -->
+        {% if movie.ratings %}
+            {% for rating in movie.ratings %}
+                <li>User 
+                    <a href="/users/{{rating.user_id}}">{{rating.user_id}}</a>: {{ rating.score }}
+                </li>
+            {% endfor %}
+        {% endif %}
+    </ul>
+{% endblock %}

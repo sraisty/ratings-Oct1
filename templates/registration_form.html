@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+    <h2>Please register to score movies</h2>
+    <form action='/register' method="POST">
+        Email : <input type="text" name="email" required><br><br>
+        Password: <input type="password" name="password" required><br><br>
+        <input type="submit">
+    </form>
+
+
+{% endblock %}

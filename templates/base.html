@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>{% block title %}Ratings{% endblock %}</title>
+    </head>
+
+    <body>
+        {% if session.get('user_id') %}
+           <form action="/logout">
+                <input type="submit" name="logout" value="Logout">
+            </form>
+        {% endif %}
+
+        <h1>Ratings</h1>
+        <ul>
+            {% for message in get_flashed_messages() %}
+                <li>{{message}}</li>
+            {% endfor %}
+        </ul>
+        <hr>
+        {% block content %} put your content here {% endblock %}
+
+    </body>
+</html>
+
+<script>
+    $(#)
+
