@@ -41,19 +41,18 @@ def get_user_info(myuser_id):
     """ Display the user info (age, zip) and the list of 
     all the movie titles and scores that this user rated
     """
-    user = User.query.get(myuser_id)
-    rating_a = db.session.query(Movie.title, Rating.score, Rating.movie_id)
-    rating_b = rating_a.filter(Rating.user_id == user.user_id)
-    ratings = rating_b.join(Rating).all()
+    user = User.query.options(
+            db.joinedload('ratings').joinedload('movie')).get(myuser_id)
+    # rating_a = db.session.query(Movie.title, Rating.score, Rating.movie_id)
+    # rating_b = rating_a.filter(Rating.user_id == user.user_id)
+    # ratings = rating_b.join(Rating).all()
 
-    #also use joinload
-    
-    return render_template("user_detail.html", user=user, ratings=ratings)
+    return render_template("user_detail.html", user=user, ratings=user.ratings)
+
 
 @app.route('/movies')
 def movie_list():
     movies = Movie.query.order_by(Movie.title).all()
-
 
     return render_template("movie_list.html", movies=movies)
 
@@ -68,39 +67,37 @@ def submit_rating():
     score = request.form.get("score")
     movie_id = request.form.get("movie_id")
 
-    movie_title = Movie.query.filter(Movie.movie_id == movie_id).first().title
-
-    movie_query = Rating.query.filter(Rating.movie_id == movie_id)  
-    r = movie_query.filter(Rating.user_id == user_id).first()
-
-    if r is None:
+    # Search DB to see if this user already rated this movie
+    # movie_title = Movie.query.filter(Movie.movie_id == movie_id).first().title
+    prior_rating = Rating.query.filter(
+        (Rating.movie_id == movie_id) & (Rating.user_id == user_id)).first()
+    
+    # movie_query = Rating.query.filter(Rating.movie_id == movie_id)  
+    # r = movie_query.filter(Rating.user_id == user_id).first()
+    if prior_rating is None:
         # add a new rating
         rating = Rating(user_id=user_id, movie_id=movie_id, score=score)
         db.session.add(rating)
         db.session.commit()
-
         # flash a success message
-
-        flash (f'Thanks for rating {movie_title}!')
-        return redirect('/')
+        flash (f'Thanks for rating {rating.movie.title}!')
+        return redirect(f'/movies/{rating.movie.movie_id}')
 
 
     # check to see if this user already submitted a rating
-    r.score = score
+    prior_rating.score = score
     db.session.commit()   
-    flash (f'We updated your rating for {movie_title}!')
-    return redirect('/')
+    flash (f'We updated your rating for {prior_rating.movie.title}!')
+    return redirect(f'/movies/{prior_rating.movie.movie_id}')
 
     
 
 @app.route('/movies/<int:movie_id>')
 def movie_info(movie_id):
-    # fake data to erase in a bit
+    """ Displays detail about the movie, including ratings on that movie """
     movie = Movie.query.get(movie_id)
-    # ratings is a list of rating objects
-    ratings = Rating.query.filter(Rating.movie_id == movie.movie_id).all()
-    
-    return render_template("movie_detail.html", movie=movie, ratings=ratings)
+    return render_template("movie_detail.html", movie=movie)
+
 
 @app.route('/register', methods=["GET"])
 def display_register_form():
@@ -127,9 +124,11 @@ def get_register_info():
     flash(f"User Added: {email}, {password}")
     return redirect ('/')
 
+
 @app.route("/login")
 def display_login_form():
     return render_template('login.html')
+
 
 @app.route("/do-login")
 def login_user():
